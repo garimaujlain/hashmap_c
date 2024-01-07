@@ -21,4 +21,5 @@ extern uint32_t _hash(uint32_t x);
 // Chaining/linked list internal API.
 extern _ll_node_t *_ll_new(uint32_t key, const char *value);
 extern uint8_t _ll_insert(_ll_node_t *head, uint32_t key, const char *value);
+extern uint8_t _ll_delete(_ll_node_t *head, uint32_t key);
 extern _ll_node_t *_ll_find(_ll_node_t *head, uint32_t key);

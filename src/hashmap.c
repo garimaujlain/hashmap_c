@@ -31,13 +31,15 @@ uint8_t delete(uint32_t key) {
     uint32_t index = _hash(key);
     if (buckets[index] == NULL) {
         return -1; //given key not in hashmap
+    } else if (buckets[index]->key == key){
+        _ll_node_t *temp = buckets[index];
+        buckets[index] = buckets[index]->next;
+        free(temp);
+        return 0;
     } else {
-        
         _ll_delete(buckets[index], key);
     }
     return 0;
-
-
 }
 
 uint8_t get(uint32_t key, char *buffer, uint32_t nbytes) {
@@ -105,13 +107,13 @@ uint8_t _ll_delete(_ll_node_t *head, uint32_t key) {
         printf("_ll_delete called with NULL argument!.");
         exit(1);
     }
-    _ll_node_t *prev = head;
-    while (curr->next != NULL) {
-         
 
+    _ll_node_t *prev = NULL;
+    while (curr->next != NULL) {
+        
         if (curr->key == key) {
-            _ll_node_t *temp = curr;
-            prev->next = temp->next;
+           
+            prev->next = curr->next;
             free(curr);
             return 0;
         }
@@ -120,7 +122,7 @@ uint8_t _ll_delete(_ll_node_t *head, uint32_t key) {
 
     }
     
-    return 0;
+    return -1;
 
 }
 
