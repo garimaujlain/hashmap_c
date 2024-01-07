@@ -7,5 +7,9 @@ int main(void) {
     char tmp[50]= "";
     get(47, tmp, 50);
     printf("Hashmap returned: %s\n", tmp);
+    
+    char tmp1[50]= "";
+    get(32, tmp1, 50);
+    printf("Hashmap returned: %s\n", tmp1);
     return 0;
 }

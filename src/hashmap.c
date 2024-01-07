@@ -27,6 +27,19 @@ uint8_t insert(uint32_t key, const char *value) {
     return 0;
 }
 
+uint8_t delete(uint32_t key) {
+    uint32_t index = _hash(key);
+    if (buckets[index] == NULL) {
+        return -1; //given key not in hashmap
+    } else {
+        
+        _ll_delete(buckets[index], key);
+    }
+    return 0;
+
+
+}
+
 uint8_t get(uint32_t key, char *buffer, uint32_t nbytes) {
     uint32_t index = _hash(key);
 
@@ -85,6 +98,23 @@ uint8_t _ll_insert(_ll_node_t *head, uint32_t key, const char *value) {
     return 0;
 }
 
+uint8_t _ll_delete(_ll_node_t *head, uint32_t key) {
+    _ll_node_t *curr = head;
+
+    if (curr == NULL) {
+        printf("_ll_delete called with NULL argument!.");
+        exit(1);
+    }
+
+    while (curr->key != key) {
+        curr = curr->next;
+    }
+    free(curr);
+    return 0;
+
+}
+
+
 _ll_node_t *_ll_find(_ll_node_t *head, uint32_t key) {
     _ll_node_t *curr = head;
 
@@ -108,3 +138,4 @@ uint32_t _hash(uint32_t x) {
     x = (x >> 16) ^ x;
     return x % NUM_BUCKETS; 
 }
+
