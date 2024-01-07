@@ -105,11 +105,21 @@ uint8_t _ll_delete(_ll_node_t *head, uint32_t key) {
         printf("_ll_delete called with NULL argument!.");
         exit(1);
     }
+    _ll_node_t *prev = head;
+    while (curr->next != NULL) {
+         
 
-    while (curr->key != key) {
+        if (curr->key == key) {
+            _ll_node_t *temp = curr;
+            prev->next = temp->next;
+            free(curr);
+            return 0;
+        }
+        prev = curr;
         curr = curr->next;
+
     }
-    free(curr);
+    
     return 0;
 
 }
