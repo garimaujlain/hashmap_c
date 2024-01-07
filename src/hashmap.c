@@ -35,7 +35,6 @@ uint8_t delete(uint32_t key) {
         _ll_node_t *temp = buckets[index];
         buckets[index] = buckets[index]->next;
         free(temp);
-        return 0;
     } else {
         _ll_delete(buckets[index], key);
     }
@@ -109,17 +108,15 @@ uint8_t _ll_delete(_ll_node_t *head, uint32_t key) {
     }
 
     _ll_node_t *prev = NULL;
-    while (curr->next != NULL) {
-        
+    while (curr != NULL) {
         if (curr->key == key) {
-           
             prev->next = curr->next;
+            free(curr->value);
             free(curr);
             return 0;
         }
         prev = curr;
         curr = curr->next;
-
     }
     
     return -1;
