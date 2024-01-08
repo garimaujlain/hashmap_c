@@ -4,9 +4,12 @@
 #include <string.h>
 
 // HashMap user-facing API
-extern uint8_t insert(uint32_t key, const char *value);
-extern uint8_t get(uint32_t key, char *buffer, uint32_t nbytes);
-extern uint8_t delete(uint32_t key);
+extern uint8_t insert(_hashmap_t *target, uint32_t key, const char *value);
+extern uint8_t get(_hashmap_t *target, uint32_t key, char *buffer, uint32_t nbytes);
+extern uint8_t delete(_hashmap_t *target, uint32_t key);
+extern _hashmap_t new(uint32_t num_buckets_initial);
+
+
 
 // Functions/structs for internal use.
 
@@ -16,7 +19,12 @@ typedef struct _ll_node {
     struct _ll_node *next;
 } _ll_node_t;
 
-extern uint32_t _hash(uint32_t x);
+typedef struct _hashmap {
+    struct _ll_node_t **bucket;
+    uint32_t num_of_elements_in_bucket;
+} _hashmap_t;
+
+extern uint32_t _hash(_hashmap_t *target, uint32_t x);
 
 // Chaining/linked list internal API.
 extern _ll_node_t *_ll_new(uint32_t key, const char *value);

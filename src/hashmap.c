@@ -1,8 +1,24 @@
 #include <hashmap.h>
 
-#define NUM_BUCKETS 2
 
-_ll_node_t *buckets[NUM_BUCKETS];
+_hashmap_t *new(uint32_t num_buckets_initial) {
+   _hashmap_t *new_hashmap;
+
+    if ((new_hashmap = malloc(sizeof(_hashmap_t))) == NULL) {
+        printf("Couldn't allocate memory. Fatal.\n");
+        exit(1);
+    }
+
+    new_hashmap->num_of_elements_in_bucket = 0;
+
+    _ll_node_t *temp[0];
+    for (uint32_t i = 0; i < num_buckets_initial; i++) {
+      temp[i] = NULL;
+      new_hashmap->num_of_elements_in_bucket = new_hashmap->num_of_elements_in_bucket + 1;
+    }
+    new_hashmap->bucket = temp;
+    return new_hashmap;
+}
 
 /* insert
    Inputs: 
@@ -13,42 +29,46 @@ _ll_node_t *buckets[NUM_BUCKETS];
     Returns:
         0 on success.
 */
-uint8_t insert(uint32_t key, const char *value) {
+uint8_t insert(_hashmap_t *target, uint32_t key, const char *value) {
     // The hash will be used to index into the array of buckets.
-    uint32_t index = _hash(key);
+    uint32_t index = _hash(target, key);
 
     // If we don't have a valid linked list at the bucket,
-    if (buckets[index] == NULL) {
-        buckets[index] = _ll_new(key, value); // make a new one
+
+    
+    if (target->bucket[index] == NULL) {
+        target->bucket[index] = _ll_new(key, value); // make a new one
     } else {
         // Otherwise, chain onto the existing linked list.
-        _ll_insert(buckets[index], key, value);
+        _ll_insert(target->bucket[index], key, value);
     }
     return 0;
 }
 
-uint8_t delete(uint32_t key) {
-    uint32_t index = _hash(key);
-    if (buckets[index] == NULL) {
+uint8_t delete(_hashmap_t *target, uint32_t key) {
+    uint32_t index = _hash(target, key);
+    _ll_node_t *temp_node;
+    temp_node = target->bucket[index];
+    if (target->bucket[index] == NULL) {
         return -1; //given key not in hashmap
-    } else if (buckets[index]->key == key){
-        _ll_node_t *temp = buckets[index];
-        buckets[index] = buckets[index]->next;
+    } else if ((*temp_node).key == key){
+        _ll_node_t *temp = temp_node;
+        temp_node = (*temp_node).next;
         free(temp);
     } else {
-        _ll_delete(buckets[index], key);
+        _ll_delete(target->bucket[index], key);
     }
     return 0;
 }
 
-uint8_t get(uint32_t key, char *buffer, uint32_t nbytes) {
-    uint32_t index = _hash(key);
+uint8_t get(_hashmap_t *target, uint32_t key, char *buffer, uint32_t nbytes) {
+    uint32_t index = _hash(target, key);
 
-    if (buckets[index] == NULL) {
+    if (target->bucket[index] == NULL) {
         return -1;
     } else {
 
-       _ll_node_t *found = _ll_find(buckets[index], key);
+       _ll_node_t *found = _ll_find(target->bucket[index], key);
        if (found == NULL) {
             return -1;
        }
@@ -141,10 +161,11 @@ _ll_node_t *_ll_find(_ll_node_t *head, uint32_t key) {
     return NULL;
 }
 
-uint32_t _hash(uint32_t x) {
+uint32_t _hash(_hashmap_t *target, uint32_t x) {
     x = ((x >> 16) ^ x) * 0x45d9f3b;
     x = ((x >> 16) ^ x) * 0x45d9f3b;
     x = (x >> 16) ^ x;
-    return x % NUM_BUCKETS; 
+    uint32_t temp = sizeof(target->bucket) / sizeof(target->bucket[0]);
+    return x % temp; 
 }
 
