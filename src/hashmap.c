@@ -132,8 +132,21 @@ uint8_t _ll_insert(_ll_node_t *head, uint32_t key, const char *value) {
         exit(1);
     }
 
-    while (curr->next != NULL) {
+    while (curr->next != NULL && curr->key != key) {
         curr = curr->next;
+    }
+
+    if (curr->key == key){
+        char *my_copy_new_value;
+        if ((my_copy_new_value = malloc(strlen(value) + 1)) == NULL) {
+            printf("Couldn't allocate memory. Fatal.\n");
+            exit(1);
+        }
+        strcpy(my_copy_new_value, value);
+        char *copy_overwritten_value = curr->value;
+        curr->value = my_copy_new_value;
+        free(copy_overwritten_value);
+        
     }
     curr->next = _ll_new(key, value);
     return 0;
