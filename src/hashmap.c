@@ -1,22 +1,28 @@
 #include <hashmap.h>
 
 
-_hashmap_t *new(uint32_t num_buckets_initial) {
-   _hashmap_t *new_hashmap;
+hashmap_t *hashmap_new(uint32_t num_buckets_initial) {
+    hashmap_t *new_hashmap;
 
-    if ((new_hashmap = malloc(sizeof(_hashmap_t))) == NULL) {
+    if ((new_hashmap = malloc(sizeof(hashmap_t))) == NULL) {
         printf("Couldn't allocate memory. Fatal.\n");
         exit(1);
     }
 
-    new_hashmap->num_of_elements_in_bucket = 0;
+    new_hashmap->buckets_arr = malloc(sizeof(_ll_node_t) * num_buckets_initial);
 
-    _ll_node_t *temp[0];
-    for (uint32_t i = 0; i < num_buckets_initial; i++) {
-      temp[i] = NULL;
-      new_hashmap->num_of_elements_in_bucket = new_hashmap->num_of_elements_in_bucket + 1;
+    if (new_hashmap->buckets_arr == NULL) {
+        printf("Couldn't allocate memory. Fatal.\n");
+        exit(1);
     }
-    new_hashmap->bucket = temp;
+
+    new_hashmap->num_buckets = num_buckets_initial;
+    new_hashmap->num_elements = 0;
+
+    for (uint32_t i = 0; i < num_buckets_initial; i++) {
+      new_hashmap->buckets_arr[i] = NULL;
+    }
+
     return new_hashmap;
 }
 
@@ -27,48 +33,62 @@ _hashmap_t *new(uint32_t num_buckets_initial) {
     Outputs:
         None
     Returns:
-        0 on success.
+        0 on success. All other return codes imply failure.
 */
-uint8_t insert(_hashmap_t *target, uint32_t key, const char *value) {
+uint8_t hashmap_insert(hashmap_t *target, uint32_t key, const char *value) {
     // The hash will be used to index into the array of buckets.
     uint32_t index = _hash(target, key);
 
     // If we don't have a valid linked list at the bucket,
-
-    
-    if (target->bucket[index] == NULL) {
-        target->bucket[index] = _ll_new(key, value); // make a new one
+    if (target->buckets_arr[index] == NULL) {
+        target->buckets_arr[index] = _ll_new(key, value); // make a new one
     } else {
         // Otherwise, chain onto the existing linked list.
-        _ll_insert(target->bucket[index], key, value);
+        _ll_insert(target->buckets_arr[index], key, value);
     }
     return 0;
 }
 
-uint8_t delete(_hashmap_t *target, uint32_t key) {
+uint8_t hashmap_delete(hashmap_t *target, uint32_t key) {
     uint32_t index = _hash(target, key);
-    _ll_node_t *temp_node;
-    temp_node = target->bucket[index];
-    if (target->bucket[index] == NULL) {
+    _ll_node_t *head = target->buckets_arr[index];
+    
+    if (target->buckets_arr[index] == NULL) {
         return -1; //given key not in hashmap
-    } else if ((*temp_node).key == key){
-        _ll_node_t *temp = temp_node;
-        temp_node = (*temp_node).next;
-        free(temp);
+    } else if (head->key == key){
+        target->buckets_arr[index] = head->next;
+        free(head->value);
+        free(head);
     } else {
-        _ll_delete(target->bucket[index], key);
+        _ll_delete(target->buckets_arr[index], key);
     }
     return 0;
 }
 
-uint8_t get(_hashmap_t *target, uint32_t key, char *buffer, uint32_t nbytes) {
+uint8_t hashmap_destroy(hashmap_t *target) {
+    if (target == NULL) {
+        return -1; 
+    }
+ 
+    for (uint32_t i = 0; i < target->num_buckets; i++){
+        if (target->buckets_arr[i] != NULL) {
+            _ll_destroy(target->buckets_arr[i]);
+        }
+    }
+
+    free(target->buckets_arr);
+    free(target);
+    return 0;
+
+}
+
+uint8_t hashmap_get(hashmap_t *target, uint32_t key, char *buffer, uint32_t nbytes) {
     uint32_t index = _hash(target, key);
 
-    if (target->bucket[index] == NULL) {
+    if (target->buckets_arr[index] == NULL) {
         return -1;
     } else {
-
-       _ll_node_t *found = _ll_find(target->bucket[index], key);
+       _ll_node_t *found = _ll_find(target->buckets_arr[index], key);
        if (found == NULL) {
             return -1;
        }
@@ -84,7 +104,7 @@ _ll_node_t *_ll_new(uint32_t key, const char *value) {
         printf("Couldn't allocate memory. Fatal.\n");
         exit(1);
     }
-
+    
     // Key
     (*new_node).key = key;
     
@@ -143,6 +163,26 @@ uint8_t _ll_delete(_ll_node_t *head, uint32_t key) {
 
 }
 
+uint8_t _ll_destroy(_ll_node_t *head) {
+    _ll_node_t *curr = head;
+
+    if (head == NULL) {
+        printf("_ll_destroy called with NULL argument!.");
+        return -1;
+    }
+
+    _ll_node_t *to_delete = NULL;
+
+    while (curr != NULL) {
+        to_delete = curr;
+        curr = curr->next;
+        free(to_delete->value);
+        free(to_delete);
+    }
+
+    return 0;
+}
+
 
 _ll_node_t *_ll_find(_ll_node_t *head, uint32_t key) {
     _ll_node_t *curr = head;
@@ -161,11 +201,10 @@ _ll_node_t *_ll_find(_ll_node_t *head, uint32_t key) {
     return NULL;
 }
 
-uint32_t _hash(_hashmap_t *target, uint32_t x) {
+uint32_t _hash(hashmap_t *target, uint32_t x) {
     x = ((x >> 16) ^ x) * 0x45d9f3b;
     x = ((x >> 16) ^ x) * 0x45d9f3b;
     x = (x >> 16) ^ x;
-    uint32_t temp = sizeof(target->bucket) / sizeof(target->bucket[0]);
-    return x % temp; 
+    return x % target->num_buckets; 
 }
 
