@@ -7,7 +7,7 @@ int main(void) {
     hashmap_insert(tmp3, 32, "Adityaa");
     hashmap_insert(tmp3, 45, "Garima");
     hashmap_insert(tmp3, 47, "Vinode");
-
+    hashmap_insert(tmp3, 47, "Vijay");
     char tmp[50]= "";
     hashmap_get(tmp3, 32, tmp, 50);
     printf("Hashmap returned: %s\n", tmp);
