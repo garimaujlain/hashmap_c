@@ -221,3 +221,6 @@ uint32_t _hash(hashmap_t *target, uint32_t x) {
     return x % target->num_buckets; 
 }
 
+uint8_t _hashmap_resize(hashmap_t *target) {
+    
+}
