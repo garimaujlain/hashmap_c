@@ -38,19 +38,31 @@ hashmap_t *hashmap_new(uint32_t num_buckets_initial) {
 uint8_t hashmap_insert(hashmap_t *target, uint32_t key, const char *value) {
     // The hash will be used to index into the array of buckets.
     uint32_t index = _hash(target, key);
+    uint32_t load_factor_after_insert = ((target->num_elements) + 1) / target->num_buckets;
+    if (load_factor_after_insert > 0.8){
+        _hashmap_resize(target, 1.5);
+    }
 
     // If we don't have a valid linked list at the bucket,
     if (target->buckets_arr[index] == NULL) {
         target->buckets_arr[index] = _ll_new(key, value); // make a new one
+        target->num_elements = target->num_elements + 1;
     } else {
         // Otherwise, chain onto the existing linked list.
         _ll_insert(target->buckets_arr[index], key, value);
+        target->num_elements = target->num_elements + 1;
     }
     return 0;
 }
 
 uint8_t hashmap_delete(hashmap_t *target, uint32_t key) {
     uint32_t index = _hash(target, key);
+
+    uint32_t load_factor_after_delete = ((target->num_elements) - 1) / target->num_buckets;
+    if (load_factor_after_delete < 0.25){
+        _hashmap_resize(target, 0.66);
+    }
+
     _ll_node_t *head = target->buckets_arr[index];
     
     if (target->buckets_arr[index] == NULL) {
@@ -147,8 +159,10 @@ uint8_t _ll_insert(_ll_node_t *head, uint32_t key, const char *value) {
         curr->value = my_copy_new_value;
         free(copy_overwritten_value);
         
+    } else {
+        curr->next = _ll_new(key, value);
     }
-    curr->next = _ll_new(key, value);
+
     return 0;
 }
 
@@ -221,6 +235,43 @@ uint32_t _hash(hashmap_t *target, uint32_t x) {
     return x % target->num_buckets; 
 }
 
-uint8_t _hashmap_resize(hashmap_t *target) {
+uint8_t _hashmap_resize(hashmap_t *target, uint32_t factor) {
+   
+    hashmap_t *my_copy_hashmap;
+
+    if ((my_copy_hashmap = malloc(sizeof(hashmap_t))) == NULL) {
+        printf("Couldn't allocate memory. Fatal.\n");
+        exit(1);
+    }
+
+    my_copy_hashmap->buckets_arr = malloc(sizeof(_ll_node_t) * ((target->num_buckets) * factor));
+
+    if (my_copy_hashmap->buckets_arr == NULL) {
+        printf("Couldn't allocate memory. Fatal.\n");
+        exit(1);
+    }
+
+    for (uint32_t i = 0; i < target->num_buckets; i++) {
+
+       while (target->buckets_arr[i] != NULL) {
+        _ll_node_t *curr = target->buckets_arr[i];
+        char *my_copy_value_i;
+        if ((my_copy_value_i = malloc(strlen(curr->value) + 1)) == NULL) {
+        printf("Couldn't allocate memory. Fatal.\n");
+        exit(1);
+        }
+        strcpy(my_copy_value_i, curr->value);
+        hashmap_insert(my_copy_hashmap, curr->key, my_copy_value_i);
+
+        target->buckets_arr[i] = curr->next;
+        free(curr->value);
+        free(curr);
+       }
+    }
     
+    my_copy_hashmap->num_buckets = (target->num_buckets) * 1.5;
+    my_copy_hashmap->num_elements = target->num_elements;
+
+    hashmap_destroy(target);
+    return 0;
 }

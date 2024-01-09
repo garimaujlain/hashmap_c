@@ -32,4 +32,4 @@ extern uint8_t _ll_insert(_ll_node_t *head, uint32_t key, const char *value);
 extern uint8_t _ll_delete(_ll_node_t *head, uint32_t key);
 extern _ll_node_t *_ll_find(_ll_node_t *head, uint32_t key);
 extern uint8_t _ll_destroy(_ll_node_t *head);
-extern uint8_t _hashmap_resize(hashmap_t *target);
+extern uint8_t _hashmap_resize(hashmap_t *target, uint32_t factor);
