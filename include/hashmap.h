@@ -16,9 +16,9 @@ typedef struct {
 } hashmap_t;
 
 // HashMap user-facing API
-extern uint8_t hashmap_insert(hashmap_t *target, uint32_t key, const char *value);
+extern hashmap_t *hashmap_insert(hashmap_t *target, uint32_t key, const char *value);
 extern uint8_t hashmap_get(hashmap_t *target, uint32_t key, char *buffer, uint32_t nbytes);
-extern uint8_t hashmap_delete(hashmap_t *target, uint32_t key);
+extern hashmap_t *hashmap_delete(hashmap_t *target, uint32_t key);
 extern hashmap_t *hashmap_new(uint32_t num_buckets_initial);
 extern uint8_t hashmap_destroy(hashmap_t *target);
 

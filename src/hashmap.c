@@ -35,15 +35,17 @@ hashmap_t *hashmap_new(uint32_t num_buckets_initial) {
     Returns:
         0 on success. All other return codes imply failure.
 */
-uint8_t hashmap_insert(hashmap_t *target, uint32_t key, const char *value) {
+hashmap_t *hashmap_insert(hashmap_t *target, uint32_t key, const char *value) {
     // The hash will be used to index into the array of buckets.
     
-    double load_factor_after_insert = ((target->num_elements) + 1) / target->num_buckets;
+    double load_factor_after_insert = (double)((target->num_elements) + 1) / target->num_buckets;
     if (load_factor_after_insert > 0.8){
         target = _hashmap_resize(target, 1.5);
     }
+
     uint32_t index = _hash(target, key);
     // If we don't have a valid linked list at the bucket,
+    
     if (target->buckets_arr[index] == NULL) {
         target->buckets_arr[index] = _ll_new(key, value); // make a new one
         target->num_elements = target->num_elements + 1;
@@ -52,29 +54,31 @@ uint8_t hashmap_insert(hashmap_t *target, uint32_t key, const char *value) {
         _ll_insert(target->buckets_arr[index], key, value);
         target->num_elements = target->num_elements + 1;
     }
-    return 0;
+    return target;
 }
 
-uint8_t hashmap_delete(hashmap_t *target, uint32_t key) {
+hashmap_t *hashmap_delete(hashmap_t *target, uint32_t key) {
     
-   
-    double load_factor_after_delete = ((target->num_elements) - 1) / target->num_buckets;
+    double load_factor_after_delete = (double) ((target->num_elements) - 1) / target->num_buckets;
     if (load_factor_after_delete < 0.25){
        target = _hashmap_resize(target, 0.66);
     }
+
     uint32_t index = _hash(target, key);
     _ll_node_t *head = target->buckets_arr[index];
     
     if (target->buckets_arr[index] == NULL) {
-        return -1; //given key not in hashmap
+        return NULL; //given key not in hashmap
     } else if (head->key == key){
         target->buckets_arr[index] = head->next;
         free(head->value);
         free(head);
+        target->num_elements = target->num_elements - 1;
     } else {
         _ll_delete(target->buckets_arr[index], key);
+        target->num_elements = target->num_elements + 1;
     }
-    return 0;
+    return target;
 }
 
 uint8_t hashmap_destroy(hashmap_t *target) {
@@ -243,12 +247,13 @@ hashmap_t *_hashmap_resize(hashmap_t *target, double factor) {
 
        for  (_ll_node_t *curr = target->buckets_arr[i]; curr != NULL; curr=curr->next) {
         hashmap_insert(my_copy_hashmap, curr->key, curr->value);
-       }  
+       } 
+        
     }
 
-    my_copy_hashmap->num_buckets = (target->num_buckets) * factor;
+    my_copy_hashmap->num_buckets = (uint32_t) ((target->num_buckets) * factor);
     my_copy_hashmap->num_elements = target->num_elements;
-     
+
     hashmap_destroy(target);
     return my_copy_hashmap;
 }
