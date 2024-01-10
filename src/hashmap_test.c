@@ -8,6 +8,9 @@ int main(void) {
     hashmap_insert(tmp3, 45, "Garima");
     hashmap_insert(tmp3, 47, "Vinode");
     hashmap_insert(tmp3, 47, "Vijay");
+    printf("Hashmap num buckets: %d\n", tmp3->num_buckets);
+   
+    
     char tmp[50]= "";
     hashmap_get(tmp3, 32, tmp, 50);
     printf("Hashmap returned: %s\n", tmp);
@@ -15,6 +18,7 @@ int main(void) {
     printf("Hashmap returned: %s\n", tmp);
     hashmap_get(tmp3, 47, tmp, 50);
     printf("Hashmap returned: %s\n", tmp);
+   
 
     hashmap_delete(tmp3, 32);
 
